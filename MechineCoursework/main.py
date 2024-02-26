@@ -1,4 +1,4 @@
-
+import joblib
 import pandas as pd
 import numpy as np
 from keras.layers import LSTM
@@ -7,6 +7,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.optimizers import SGD
 
 
 # We will load each file and assign labels to each gesture class
@@ -15,18 +16,19 @@ from sklearn.preprocessing import StandardScaler
 # Assign labels based on the file names (these should be verified with the user)
 labels_dict = {
     'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
-    'guolai': 1,  # Assuming 'guolai.xls' corresponds to the 'come here' gesture
-    'zoukai': 2,  # Assuming 'zoukai.xls' corresponds to the 'go away' gesture
-    'huishou': 3  # Assuming 'huishou.xls' corresponds to the 'waving' gesture
+    'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
+    'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
+    'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
 }
 
 # Load each dataset and create a combined dataframe with labels
 dataframes = []
 for gesture, label in labels_dict.items():
-    file_path = f'./data/{gesture}/{gesture}.xls'
-    gesture_data = pd.read_excel(file_path)
-    gesture_data['label'] = label
-    dataframes.append(gesture_data)
+    for i in range(1,16):
+        file_path = f'./data/{gesture}/{gesture}{i}.xls'
+        gesture_data = pd.read_excel(file_path)
+        gesture_data['label'] = label
+        dataframes.append(gesture_data)
 # print(dataframes)
 # # Combine all dataframes into one
 combined_data = pd.concat(dataframes, ignore_index=True)
@@ -53,7 +55,8 @@ y = to_categorical(combined_data['label'])
 X = combined_data.drop(['Time (s)', 'label'], axis=1).values
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
-print(X_scaled)
+joblib.dump(scaler, 'scaler.save')
+# print(X_scaled)
 
 # 划分数据为训练集和测试集
 #  1:4 分为训练集和测试集
@@ -64,8 +67,8 @@ X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, 
 # Sequential模型是Keras中的一种模型，用于线性堆叠层。这意味着您可以按顺序添加一层又一层，每层只有一个输入和一个输出。
 model = Sequential()
 # 添加一个一维卷积层（Conv1D）。这是1D CNN的核心，用于提取序列数据的特征。
-model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
-
+model.add(Conv1D(filters=128, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+# 128，0.7621.64, 0.7547
 # 添加一个Dropout层，用于减少过拟合。Dropout通过在训练过程中随机丢弃（设置为零）网络中的一部分神经元输出，来提高模型的泛化能力。
 # 0.5表示丢弃率为50%，即在训练过程中随机选择50%的神经元输出设置为0
 model.add(Dropout(0.5))
@@ -78,13 +81,57 @@ model.add(Dense(100, activation='relu'))
 model.add(Dense(y.shape[1], activation='softmax'))
 
 # 编译模型
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+# 优化器和学习率
+# SGD
+# from tensorflow.keras.optimizers import SGD
+#
+# # 使用SGD优化器，指定学习率
+# optimizer = SGD(learning_rate=0.01)
+#
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizer,
+#               metrics=['accuracy'])
+
+# RMSprop
+# from tensorflow.keras.optimizers import RMSprop
+#
+# # 使用RMSprop优化器，指定学习率
+# optimizer = RMSprop(learning_rate=0.001)
+#
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizer,
+#               metrics=['accuracy'])
+
+# 学习率衰减
+# from tensorflow.keras.optimizers import Adam
+
+# 初始化一个学习率衰减函数
+# lr_schedule = ExponentialDecay(
+#     initial_learning_rate=1e-2,
+#     decay_steps=10000,
+#     decay_rate=0.9)
+#
+# # 使用带有学习率调度器的Adam优化器
+# optimizer = Adam(learning_rate=lr_schedule)
+
+# 学习率越小，离最优解越近，效率越慢
+optimizer = SGD(learning_rate=0.01)
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=optimizer,
+              metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
 # 训练模型
-history = model.fit(X_train, y_train, epochs=1000, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
 
 # 评估模型
 accuracy = model.evaluate(X_test, y_test, verbose=0)[1]
 print(f'Test accuracy: {accuracy}')
 
 model.save('my_model.h5')  # HDF5文件，需要安装h5py
+
+
+
+
+
