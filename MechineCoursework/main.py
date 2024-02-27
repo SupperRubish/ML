@@ -1,20 +1,21 @@
 import joblib
 import pandas as pd
 import numpy as np
-from keras.layers import LSTM
-from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
-
+import h5py
+from tensorflow.keras.layers import LSTM
 from sklearn.model_selection import train_test_split
-from keras.models import Sequential
-from keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
-from keras.utils import to_categorical
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
+from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
-from keras.optimizers import SGD, Adam
+from tensorflow.keras.optimizers import SGD, Adam
 
 # We will load each file and assign labels to each gesture class
 # The labels are based on the filenames which seem to indicate the gesture
 
 # Assign labels based on the file names (these should be verified with the user)
+from tensorflow.python.keras.optimizer_v2.learning_rate_schedule import ExponentialDecay
+
 labels_dict = {
     'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
     'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
@@ -127,7 +128,7 @@ optimizer = Adam(learning_rate=lr_schedule)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
 # 训练模型
-history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, epochs=3, validation_data=(X_test, y_test))
 
 # 评估模型
 accuracy = model.evaluate(X_test, y_test, verbose=0)[1]
