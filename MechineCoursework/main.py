@@ -2,7 +2,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from keras.layers import LSTM
-from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
+from keras.src.optimizers.schedules import ExponentialDecay
 
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
