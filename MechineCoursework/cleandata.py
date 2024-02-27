@@ -76,4 +76,7 @@ combined_data['Z_Score_AccZ'] = zscore(combined_data['Linear Acceleration z (m/s
 combined_data['Z_Score_AbsoluteAcc'] = zscore(combined_data['Absolute acceleration (m/s^2)'])
 
 # Display Z-scores
-print(combined_data.head())
+print(combined_data['Z_Score_AccX'].head() )
+print(combined_data['Z_Score_AccY'].head() )
+print(combined_data['Z_Score_AccZ'].head() )
+print(combined_data['Z_Score_AbsoluteAcc'].head() )
