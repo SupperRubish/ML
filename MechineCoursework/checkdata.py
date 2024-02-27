@@ -62,13 +62,13 @@ print(original_data.dtypes)
 
 print("--------------------zscore检查异常值-----------------------------")
 
-# sns.set(style="whitegrid")
-#
-# plt.figure(figsize=(12, 6))
-# sns.boxplot(data=combined_data)
-# plt.title('Boxplot of Features to Identify Outliers')
-# plt.xticks(rotation=45)
-# plt.show()
+sns.set(style="whitegrid")
+
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=combined_data)
+plt.title('Boxplot of Features to Identify Outliers')
+plt.xticks(rotation=45)
+plt.show()
 
 combined_data['Z_Score_AccX'] = zscore(combined_data['Linear Acceleration x (m/s^2)'])
 combined_data['Z_Score_AccY'] = zscore(combined_data['Linear Acceleration y (m/s^2)'])
