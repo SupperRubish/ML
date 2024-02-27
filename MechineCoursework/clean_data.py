@@ -15,8 +15,8 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.python.keras.optimizer_v2.learning_rate_schedule import ExponentialDecay
-def clean():
-    labels_dict = {
+
+labels_dict = {
         'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
         'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
@@ -24,35 +24,21 @@ def clean():
     }
 
     # Load each dataset and create a combined dataframe with labels
-    dataframes = []
-    for gesture, label in labels_dict.items():
-        for i in range(1,16):
-            file_path = f'./data/{gesture}/{gesture}{i}.xls'
-            gesture_data = pd.read_excel(file_path)
-            gesture_data['label'] = label
-            dataframes.append(gesture_data)
-    combined_data = pd.concat(dataframes, ignore_index=True)
+dataframes = []
+for gesture, label in labels_dict.items():
+    for i in range(1,16):
+        file_path = f'./data/{gesture}/{gesture}{i}.xls'
+        gesture_data = pd.read_excel(file_path)
+        gesture_data['label'] = label
+        dataframes.append(gesture_data)
+combined_data = pd.concat(dataframes, ignore_index=True)
+c_data=pd.concat(dataframes, ignore_index=True)
 
 
-
+def clean():
     # 以5%和95%分位数限制数据
     for column in ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)', 'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']:
         combined_data[column] = winsorize(combined_data[column], limits=[0.05, 0.05])
-
-
-    combined_data['Z_Score_AccX'] = zscore(combined_data['Linear Acceleration x (m/s^2)'])
-    combined_data['Z_Score_AccY'] = zscore(combined_data['Linear Acceleration y (m/s^2)'])
-    combined_data['Z_Score_AccZ'] = zscore(combined_data['Linear Acceleration z (m/s^2)'])
-    combined_data['Z_Score_AbsoluteAcc'] = zscore(combined_data['Absolute acceleration (m/s^2)'])
-
-    combined_data['is_outlier'] = (combined_data['Z_Score_AccX'].abs() >= 3) | \
-                                  (combined_data['Z_Score_AccY'].abs() >= 3) | \
-                                  (combined_data['Z_Score_AccZ'].abs() >= 3) | \
-                                  (combined_data['Z_Score_AbsoluteAcc'].abs() >= 3)
-
-    outlier_count = combined_data['is_outlier'].sum()
-
-    print(f"异常值的行数: {outlier_count}")
 
     print(combined_data.head()),
     print(combined_data.tail()),
@@ -60,7 +46,25 @@ def clean():
 
     return combined_data
 
-clean()
+
+
+
+def check():
+    c_data['Z_Score_AccX'] = zscore(c_data['Linear Acceleration x (m/s^2)'])
+    c_data['Z_Score_AccY'] = zscore(c_data['Linear Acceleration y (m/s^2)'])
+    c_data['Z_Score_AccZ'] = zscore(c_data['Linear Acceleration z (m/s^2)'])
+    c_data['Z_Score_AbsoluteAcc'] = zscore(c_data['Absolute acceleration (m/s^2)'])
+
+    c_data['is_outlier'] = (c_data['Z_Score_AccX'].abs() >= 3) | \
+                                  (c_data['Z_Score_AccY'].abs() >= 3) | \
+                                  (c_data['Z_Score_AccZ'].abs() >= 3) | \
+                                  (c_data['Z_Score_AbsoluteAcc'].abs() >= 3)
+
+    outlier_count = c_data['is_outlier'].sum()
+
+    print(f"异常值的行数: {outlier_count}")
+
+
 #
 # y = to_categorical(combined_data['label'])
 #
