@@ -60,7 +60,7 @@ original_data = combined_data.drop_duplicates()
 # Now let's check the data types to ensure they are correct
 print(original_data.dtypes)
 
-print("--------------------检查异常值-----------------------------")
+print("--------------------zscore检查异常值-----------------------------")
 
 # sns.set(style="whitegrid")
 #
@@ -90,7 +90,12 @@ combined_data['is_outlier'] = (combined_data['Z_Score_AccX'].abs() >= 3) | \
 
 # 计算标记为异常值的行数
 outlier_count = combined_data['is_outlier'].sum()
+
 print(f"异常值的行数: {outlier_count}")
+
+print('--------------------处理异常值-----------------------------')
+
+
 
 
 
