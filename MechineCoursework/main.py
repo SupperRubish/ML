@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 from tensorflow.keras.layers import LSTM
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
-from tensorflow.keras.utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
+from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.optimizers import SGD
+from keras.optimizers import SGD
 
 
 # We will load each file and assign labels to each gesture class
@@ -61,6 +61,9 @@ joblib.dump(scaler, 'scaler.save')
 # 划分数据为训练集和测试集
 #  1:4 分为训练集和测试集
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
+X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
+
 # print(X_train)
 
 X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
