@@ -54,16 +54,18 @@ y = to_categorical(combined_data['label'])
 
 # 数据标准化
 X = combined_data.drop(['Time (s)', 'label'], axis=1).values
+print(X)
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 joblib.dump(scaler, 'scaler.save')
-# print(X_scaled)
+print(X_scaled)
 
 # 划分数据为训练集和测试集
 #  1:4 分为训练集和测试集
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
+
 
 # print(X_train)
 
