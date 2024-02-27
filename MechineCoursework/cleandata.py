@@ -62,13 +62,13 @@ print(original_data.dtypes)
 
 print("--------------------检查异常值-----------------------------")
 
-sns.set(style="whitegrid")
-
-plt.figure(figsize=(12, 6))
-sns.boxplot(data=combined_data)
-plt.title('Boxplot of Features to Identify Outliers')
-plt.xticks(rotation=45)
-plt.show()
+# sns.set(style="whitegrid")
+#
+# plt.figure(figsize=(12, 6))
+# sns.boxplot(data=combined_data)
+# plt.title('Boxplot of Features to Identify Outliers')
+# plt.xticks(rotation=45)
+# plt.show()
 
 combined_data['Z_Score_AccX'] = zscore(combined_data['Linear Acceleration x (m/s^2)'])
 combined_data['Z_Score_AccY'] = zscore(combined_data['Linear Acceleration y (m/s^2)'])
@@ -76,7 +76,21 @@ combined_data['Z_Score_AccZ'] = zscore(combined_data['Linear Acceleration z (m/s
 combined_data['Z_Score_AbsoluteAcc'] = zscore(combined_data['Absolute acceleration (m/s^2)'])
 
 # Display Z-scores
-print(combined_data['Z_Score_AccX'].head() )
-print(combined_data['Z_Score_AccY'].head() )
-print(combined_data['Z_Score_AccZ'].head() )
-print(combined_data['Z_Score_AbsoluteAcc'].head() )
+# print(combined_data['Z_Score_AccX'].head() )
+# print(combined_data['Z_Score_AccY'].head() )
+# print(combined_data['Z_Score_AccZ'].head() )
+# print(combined_data['Z_Score_AbsoluteAcc'].head() )
+
+
+# 标记异常值
+combined_data['is_outlier'] = (combined_data['Z_Score_AccX'].abs() >= 3) | \
+                              (combined_data['Z_Score_AccY'].abs() >= 3) | \
+                              (combined_data['Z_Score_AccZ'].abs() >= 3) | \
+                              (combined_data['Z_Score_AbsoluteAcc'].abs() >= 3)
+
+# 计算标记为异常值的行数
+outlier_count = combined_data['is_outlier'].sum()
+print(f"异常值的行数: {outlier_count}")
+
+
+
