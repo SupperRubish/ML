@@ -2,7 +2,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 from scipy import stats
 
 prediction={
@@ -17,7 +17,7 @@ scaler = joblib.load('scaler.save')
 model = load_model('my_model.h5')
 
 # 加载新的预测数据
-X_new = pd.read_excel("./prediction/go1.xls")
+X_new = pd.read_excel("./prediction/go_l1.xls")
 X_new = X_new.drop(['Time (s)'], axis=1).values
 
 # 使用相同的scaler进行标准化

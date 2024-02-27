@@ -1,14 +1,15 @@
 import joblib
 import pandas as pd
 import numpy as np
-from tensorflow.keras.layers import LSTM
+from keras.layers import LSTM
+from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
+
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
 from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
-from keras.optimizers import SGD
-
+from keras.optimizers import SGD, Adam
 
 # We will load each file and assign labels to each gesture class
 # The labels are based on the filenames which seem to indicate the gesture
@@ -66,9 +67,6 @@ X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
 # print(X_train)
 
-X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
-X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
-
 # 构建1D CNN模型
 # Sequential模型是Keras中的一种模型，用于线性堆叠层。这意味着您可以按顺序添加一层又一层，每层只有一个输入和一个输出。
 model = Sequential()
@@ -86,12 +84,47 @@ model.add(LSTM(100))
 model.add(Dense(100, activation='relu'))
 model.add(Dense(y.shape[1], activation='softmax'))
 
-optimizer = SGD(learning_rate=0.01)
+# 编译模型
+# 优化器和学习率
+# SGD
+# from tensorflow.keras.optimizers import SGD
+#
+# # 使用SGD优化器，指定学习率
+# optimizer = SGD(learning_rate=0.01)
+#
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizer,
+#               metrics=['accuracy'])
 
-model.compile(loss='categorical_crossentropy',
-              optimizer=optimizer,
-              metrics=['accuracy'])
-#model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+# RMSprop
+# from tensorflow.keras.optimizers import RMSprop
+#
+# # 使用RMSprop优化器，指定学习率
+# optimizer = RMSprop(learning_rate=0.001)
+#
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizer,
+#               metrics=['accuracy'])
+
+# 学习率衰减
+# from tensorflow.keras.optimizers import Adam
+
+# 初始化一个学习率衰减函数
+lr_schedule = ExponentialDecay(
+    initial_learning_rate=1e-2,
+    decay_steps=10000,
+    decay_rate=0.9)
+
+# # 使用带有学习率调度器的Adam优化器
+optimizer = Adam(learning_rate=lr_schedule)
+
+# 学习率越小，离最优解越近，效率越慢
+# optimizer = SGD(learning_rate=0.01)
+
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizer,
+#               metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
 # 训练模型
 history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
