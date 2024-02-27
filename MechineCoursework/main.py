@@ -2,13 +2,14 @@ import joblib
 import pandas as pd
 import numpy as np
 from keras.layers import LSTM
+from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
+
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
 from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
-from keras.optimizers import SGD
-
+from keras.optimizers import SGD, Adam
 
 # We will load each file and assign labels to each gesture class
 # The labels are based on the filenames which seem to indicate the gesture
@@ -109,20 +110,20 @@ model.add(Dense(y.shape[1], activation='softmax'))
 # from tensorflow.keras.optimizers import Adam
 
 # 初始化一个学习率衰减函数
-# lr_schedule = ExponentialDecay(
-#     initial_learning_rate=1e-2,
-#     decay_steps=10000,
-#     decay_rate=0.9)
-#
+lr_schedule = ExponentialDecay(
+    initial_learning_rate=1e-2,
+    decay_steps=10000,
+    decay_rate=0.9)
+
 # # 使用带有学习率调度器的Adam优化器
-# optimizer = Adam(learning_rate=lr_schedule)
+optimizer = Adam(learning_rate=lr_schedule)
 
 # 学习率越小，离最优解越近，效率越慢
-optimizer = SGD(learning_rate=0.01)
+# optimizer = SGD(learning_rate=0.01)
 
-model.compile(loss='categorical_crossentropy',
-              optimizer=optimizer,
-              metrics=['accuracy'])
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizer,
+#               metrics=['accuracy'])
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
 # 训练模型
