@@ -9,7 +9,7 @@ prediction={
     0: "circle",
     1: "come",
     2: "go",
-    3: "waving"
+    3: "wave"
 }
 
 # 加载之前保存的scaler和模型

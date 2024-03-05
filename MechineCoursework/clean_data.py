@@ -20,7 +20,7 @@ from tensorflow.python.keras.optimizer_v2.learning_rate_schedule import Exponent
 #         'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
 #         'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
 #         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
-#         'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
+#         'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
 #     }
 #
 #     # Load each dataset and create a combined dataframe with labels
@@ -40,7 +40,7 @@ def clean():
         'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
         'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
-        'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
+        'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
     }
     names=["l"]
 
@@ -48,7 +48,7 @@ def clean():
     dataframes = []
     for gesture, label in labels_dict.items():
         for j in names:
-            for i in range(1, 30):
+            for i in range(1, 11):
                 number = str(i)
                 top = str(j)
                 file_path = f'./data/{gesture}/{top}_{gesture}_{number}.xls'
@@ -70,20 +70,20 @@ def clean():
 
 
 
-def check():
-    c_data['Z_Score_AccX'] = zscore(c_data['Linear Acceleration x (m/s^2)'])
-    c_data['Z_Score_AccY'] = zscore(c_data['Linear Acceleration y (m/s^2)'])
-    c_data['Z_Score_AccZ'] = zscore(c_data['Linear Acceleration z (m/s^2)'])
-    c_data['Z_Score_AbsoluteAcc'] = zscore(c_data['Absolute acceleration (m/s^2)'])
-
-    c_data['is_outlier'] = (c_data['Z_Score_AccX'].abs() >= 3) | \
-                                  (c_data['Z_Score_AccY'].abs() >= 3) | \
-                                  (c_data['Z_Score_AccZ'].abs() >= 3) | \
-                                  (c_data['Z_Score_AbsoluteAcc'].abs() >= 3)
-
-    outlier_count = c_data['is_outlier'].sum()
-
-    print(f"异常值的行数: {outlier_count}")
+# def check():
+#     c_data['Z_Score_AccX'] = zscore(c_data['Linear Acceleration x (m/s^2)'])
+#     c_data['Z_Score_AccY'] = zscore(c_data['Linear Acceleration y (m/s^2)'])
+#     c_data['Z_Score_AccZ'] = zscore(c_data['Linear Acceleration z (m/s^2)'])
+#     c_data['Z_Score_AbsoluteAcc'] = zscore(c_data['Absolute acceleration (m/s^2)'])
+#
+#     c_data['is_outlier'] = (c_data['Z_Score_AccX'].abs() >= 3) | \
+#                                   (c_data['Z_Score_AccY'].abs() >= 3) | \
+#                                   (c_data['Z_Score_AccZ'].abs() >= 3) | \
+#                                   (c_data['Z_Score_AbsoluteAcc'].abs() >= 3)
+#
+#     outlier_count = c_data['is_outlier'].sum()
+#
+#     print(f"异常值的行数: {outlier_count}")
 
 
 #

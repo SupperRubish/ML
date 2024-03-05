@@ -8,10 +8,10 @@ import numpy as np
 #     'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
 #     'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
 #     'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
-#     'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
+#     'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
 # }
 
-labels_dict=['circle','come','go','waving']
+labels_dict=['circle','come','go','wave']
 
 dataframes = []
 for gesture in labels_dict:
