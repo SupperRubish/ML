@@ -16,26 +16,47 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.python.keras.optimizer_v2.learning_rate_schedule import ExponentialDecay
 
-labels_dict = {
+# labels_dict = {
+#         'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
+#         'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
+#         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
+#         'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
+#     }
+#
+#     # Load each dataset and create a combined dataframe with labels
+# dataframes = []
+# for gesture, label in labels_dict.items():
+#     for i in range(1,16):
+#         file_path = f'./data/{gesture}/{gesture}{i}.xls'
+#         gesture_data = pd.read_excel(file_path)
+#         gesture_data['label'] = label
+#         dataframes.append(gesture_data)
+# combined_data = pd.concat(dataframes, ignore_index=True)
+# c_data=pd.concat(dataframes, ignore_index=True)
+
+
+def clean():
+    labels_dict = {
         'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
         'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
         'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
     }
+    names=["l"]
 
     # Load each dataset and create a combined dataframe with labels
-dataframes = []
-for gesture, label in labels_dict.items():
-    for i in range(1,16):
-        file_path = f'./data/{gesture}/{gesture}{i}.xls'
-        gesture_data = pd.read_excel(file_path)
-        gesture_data['label'] = label
-        dataframes.append(gesture_data)
-combined_data = pd.concat(dataframes, ignore_index=True)
-c_data=pd.concat(dataframes, ignore_index=True)
-
-
-def clean():
+    dataframes = []
+    for gesture, label in labels_dict.items():
+        for j in names:
+            for i in range(1, 30):
+                number = str(i)
+                top = str(j)
+                file_path = f'./data/{gesture}/{top}_{gesture}_{number}.xls'
+                gesture_data = pd.read_excel(file_path)
+                gesture_data['label'] = label
+                dataframes.append(gesture_data)
+    combined_data = pd.concat(dataframes, ignore_index=True)
+    c_data = pd.concat(dataframes, ignore_index=True)
     # 以5%和95%分位数限制数据
     for column in ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)', 'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']:
         combined_data[column] = winsorize(combined_data[column], limits=[0.05, 0.05])

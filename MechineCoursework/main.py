@@ -2,7 +2,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from keras.layers import LSTM
-from keras.src.optimizers.schedules import ExponentialDecay
+from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
 
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
@@ -10,35 +10,36 @@ from keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
 from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 from keras.optimizers import SGD, Adam
-
+from clean_data import clean
 # We will load each file and assign labels to each gesture class
 # The labels are based on the filenames which seem to indicate the gesture
 
 # Assign labels based on the file names (these should be verified with the user)
-labels_dict = {
-    'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
-    'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
-    'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
-    'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
-}
-
-# Load each dataset and create a combined dataframe with labels
-dataframes = []
-for gesture, label in labels_dict.items():
-    for i in range(1,16):
-        file_path = f'./data/{gesture}/{gesture}{i}.xls'
-        gesture_data = pd.read_excel(file_path)
-        gesture_data['label'] = label
-        dataframes.append(gesture_data)
-# print(dataframes)
-# # Combine all dataframes into one
-combined_data = pd.concat(dataframes, ignore_index=True)
+# labels_dict = {
+#     'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
+#     'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
+#     'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
+#     'waving': 3  # Assuming 'waving.xls' corresponds to the 'waving' gesture
+# }
 #
-# # Check the combined dataframe
-print(combined_data.head()),
-print(combined_data.tail()),
-print(combined_data['label'].value_counts())
+# # Load each dataset and create a combined dataframe with labels
+# dataframes = []
+# for gesture, label in labels_dict.items():
+#     for i in range(1,16):
+#         file_path = f'./data/{gesture}/{gesture}{i}.xls'
+#         gesture_data = pd.read_excel(file_path)
+#         gesture_data['label'] = label
+#         dataframes.append(gesture_data)
+# # print(dataframes)
+# # # Combine all dataframes into one
+# combined_data = pd.concat(dataframes, ignore_index=True)
+# #
+# # # Check the combined dataframe
+# print(combined_data.head()),
+# print(combined_data.tail()),
+# print(combined_data['label'].value_counts())
 
+combined_data = clean()
 #
 # 一维卷积神经网络（1D CNN）来训练模型。在开始之前，我们需要执行以下步骤：
 #
