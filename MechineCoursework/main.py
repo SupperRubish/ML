@@ -1,6 +1,7 @@
 import joblib
 import pandas as pd
 import numpy as np
+from keras.callbacks import EarlyStopping
 from keras.layers import LSTM
 from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
 
@@ -15,31 +16,35 @@ from clean_data import clean
 # The labels are based on the filenames which seem to indicate the gesture
 
 # Assign labels based on the file names (these should be verified with the user)
-# labels_dict = {
-#     'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
-#     'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
-#     'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
-#     'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
-# }
-#
-# # Load each dataset and create a combined dataframe with labels
-# dataframes = []
-# for gesture, label in labels_dict.items():
-#     for i in range(1,16):
-#         file_path = f'./data/{gesture}/{gesture}{i}.xls'
-#         gesture_data = pd.read_excel(file_path)
-#         gesture_data['label'] = label
-#         dataframes.append(gesture_data)
-# # print(dataframes)
-# # # Combine all dataframes into one
-# combined_data = pd.concat(dataframes, ignore_index=True)
+labels_dict = {
+        'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
+        'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
+        'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
+        'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
+    }
+names=["l","c","p"]
+
+# Load each dataset and create a combined dataframe with labels
+dataframes = []
+for gesture, label in labels_dict.items():
+    for i in range(1, 11):
+        for j in names:
+            number = str(i)
+            top = str(j)
+            file_path = f'./data/{gesture}/{top}_{gesture}_{number}.xls'
+            gesture_data = pd.read_excel(file_path)
+            gesture_data['label'] = label
+            dataframes.append(gesture_data)
+# print(dataframes)
+# # Combine all dataframes into one
+combined_data = pd.concat(dataframes, ignore_index=True)
 # #
 # # # Check the combined dataframe
 # print(combined_data.head()),
 # print(combined_data.tail()),
 # print(combined_data['label'].value_counts())
 
-combined_data = clean()
+# combined_data = clean()
 #
 # 一维卷积神经网络（1D CNN）来训练模型。在开始之前，我们需要执行以下步骤：
 #
@@ -130,9 +135,9 @@ optimizer = Adam(learning_rate=lr_schedule)
 #               optimizer=optimizer,
 #               metrics=['accuracy'])
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-
+early_stopping = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
 # 训练模型
-history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, epochs=1000, validation_data=(X_test, y_test),callbacks=early_stopping)
 
 # 评估模型
 accuracy = model.evaluate(X_test, y_test, verbose=0)[1]

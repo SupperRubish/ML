@@ -42,7 +42,7 @@ def clean():
         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
         'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
     }
-    names=["l"]
+    names=["l","c","p"]
 
     # Load each dataset and create a combined dataframe with labels
     dataframes = []
