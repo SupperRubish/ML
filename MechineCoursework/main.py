@@ -22,12 +22,12 @@ labels_dict = {
         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
         'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
     }
-names=["l","c","p"]
+names=["c","p"]
 
 # Load each dataset and create a combined dataframe with labels
 dataframes = []
 for gesture, label in labels_dict.items():
-    for i in range(1, 11):
+    for i in range(1,6):
         for j in names:
             number = str(i)
             top = str(j)
