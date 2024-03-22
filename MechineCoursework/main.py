@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from keras.callbacks import EarlyStopping
 from keras.layers import LSTM
-from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
+from keras.src.optimizers.schedules import ExponentialDecay
 
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
@@ -11,6 +11,7 @@ from keras.layers import Dense, Conv1D, Flatten, Dropout, MaxPooling1D
 from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 from keras.optimizers import SGD, Adam
+from scipy.signal import butter, lfilter
 from clean_data import clean
 # We will load each file and assign labels to each gesture class
 # The labels are based on the filenames which seem to indicate the gesture
@@ -25,19 +26,77 @@ labels_dict = {
 names=["c","p"]
 
 # Load each dataset and create a combined dataframe with labels
+
 dataframes = []
-for gesture, label in labels_dict.items():
-    for i in range(1,6):
-        for j in names:
-            number = str(i)
-            top = str(j)
-            file_path = f'./data/{gesture}/{top}_{gesture}_{number}.xls'
-            gesture_data = pd.read_excel(file_path)
-            gesture_data['label'] = label
-            dataframes.append(gesture_data)
+#cheng的指导
+
+for i in names:
+    for j in range(1,6):
+        i=str(i)
+        j=str(j)
+        file_circle=f'./data/circle/{i}_circle_{j}.xls'
+        file_come = f'./data/come/{i}_come_{j}.xls'
+        file_go= f'./data/go/{i}_go_{j}.xls'
+        file_wave= f'./data/wave/{i}_wave_{j}.xls'
+        circle_data=pd.read_excel(file_circle)[:2100]
+        come_data=pd.read_excel(file_come)[:2100]
+        go_data=pd.read_excel(file_go)[:2100]
+        wave_data=pd.read_excel(file_wave)[:2100]
+        for k in range(0,2100,211):
+
+            #circle
+            circle=circle_data.iloc[k:k+211].copy()
+            circle['label'] = 0
+            dataframes.append(circle)
+            #come
+            come=come_data.iloc[k:k+211].copy()
+            come['label']=1
+            dataframes.append(come)
+            #go
+            go=go_data.iloc[k:k+211].copy()
+            go['label']=2
+            dataframes.append(go)
+            #wave
+            wave=wave_data.iloc[k:k+211].copy()
+            wave['label']=3
+            dataframes.append(wave)
+
 # print(dataframes)
 # # Combine all dataframes into one
 combined_data = pd.concat(dataframes, ignore_index=True)
+
+import pandas as pd
+
+# 假设 'data' 是之前加载的DataFrame
+window_size = 5  # 定义移动平均的窗口大小
+
+# 对每个需要处理的列应用移动平均
+smoothed_data = combined_data.copy()
+smoothed_data['Linear Acceleration x (m/s^2)'] = combined_data['Linear Acceleration x (m/s^2)'].rolling(window=window_size).mean()
+smoothed_data['Linear Acceleration y (m/s^2)'] = combined_data['Linear Acceleration y (m/s^2)'].rolling(window=window_size).mean()
+smoothed_data['Linear Acceleration z (m/s^2)'] = combined_data['Linear Acceleration z (m/s^2)'].rolling(window=window_size).mean()
+
+# 填充NaN值，这些NaN是由于滚动平均而产生的。可以用前向填充或后向填充。
+smoothed_data.fillna(method='bfill', inplace=True)
+
+def butter_lowpass_filter(data, cutoff, fs, order):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    y = lfilter(b, a, data)
+    return y
+
+
+# 应用滤波器（示例参数）
+cutoff = 3.667  # 截止频率（需根据数据调整）
+fs = 50.0       # 采样率（需根据数据调整）
+order = 6       # 滤波器阶数
+
+# 假设 'data' 是之前加载的DataFrame
+filtered_data = combined_data.copy()
+filtered_data['Linear Acceleration x (m/s^2)'] = butter_lowpass_filter(combined_data['Linear Acceleration x (m/s^2)'], cutoff, fs, order)
+filtered_data['Linear Acceleration y (m/s^2)'] = butter_lowpass_filter(combined_data['Linear Acceleration y (m/s^2)'], cutoff, fs, order)
+filtered_data['Linear Acceleration z (m/s^2)'] = butter_lowpass_filter(combined_data['Linear Acceleration z (m/s^2)'], cutoff, fs, order)
 # #
 # # # Check the combined dataframe
 # print(combined_data.head()),
@@ -56,15 +115,18 @@ combined_data = pd.concat(dataframes, ignore_index=True)
 # 模型评估：使用测试集数据来评估模型性能。
 # 接下来，我将开始这个过程。首先，我们需要将数据划分为训练集和测试集。然后，我会构建一个简单的1D CNN模型并训练它。
 
-y = to_categorical(combined_data['label'])
+y = to_categorical(filtered_data['label'])
 
 # 数据标准化
-X = combined_data.drop(['Time (s)', 'label'], axis=1).values
+X = filtered_data.drop(['Time (s)', 'label'], axis=1).values
 print(X)
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 joblib.dump(scaler, 'scaler.save')
 print(X_scaled)
+
+
+
 
 # 划分数据为训练集和测试集
 #  1:4 分为训练集和测试集
@@ -135,7 +197,7 @@ optimizer = Adam(learning_rate=lr_schedule)
 #               optimizer=optimizer,
 #               metrics=['accuracy'])
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-early_stopping = EarlyStopping(monitor='val_loss', patience=100, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 # 训练模型
 history = model.fit(X_train, y_train, epochs=1000, validation_data=(X_test, y_test),callbacks=early_stopping)
 
