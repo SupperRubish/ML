@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from keras.callbacks import EarlyStopping
 from keras.layers import LSTM
-from keras.src.optimizers.schedules import ExponentialDecay
+from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
 
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
@@ -38,26 +38,26 @@ for i in names:
         file_come = f'./data/come/{i}_come_{j}.xls'
         file_go= f'./data/go/{i}_go_{j}.xls'
         file_wave= f'./data/wave/{i}_wave_{j}.xls'
-        circle_data=pd.read_excel(file_circle)[:2100]
-        come_data=pd.read_excel(file_come)[:2100]
-        go_data=pd.read_excel(file_go)[:2100]
-        wave_data=pd.read_excel(file_wave)[:2100]
-        for k in range(0,2100,211):
+        circle_data=pd.read_excel(file_circle)[:1500]
+        come_data=pd.read_excel(file_come)[:1500]
+        go_data=pd.read_excel(file_go)[:1500]
+        wave_data=pd.read_excel(file_wave)[:1500]
+        for k in range(0,1500,100):
 
             #circle
-            circle=circle_data.iloc[k:k+211].copy()
+            circle=circle_data.iloc[k:k+100].copy()
             circle['label'] = 0
             dataframes.append(circle)
             #come
-            come=come_data.iloc[k:k+211].copy()
+            come=come_data.iloc[k:k+100].copy()
             come['label']=1
             dataframes.append(come)
             #go
-            go=go_data.iloc[k:k+211].copy()
+            go=go_data.iloc[k:k+100].copy()
             go['label']=2
             dataframes.append(go)
             #wave
-            wave=wave_data.iloc[k:k+211].copy()
+            wave=wave_data.iloc[k:k+100].copy()
             wave['label']=3
             dataframes.append(wave)
 
