@@ -29,7 +29,7 @@ names=["c","p","l"]
 
 dataframes = []
 #cheng的指导
-
+num=0
 for i in names:
     for j in range(1,6):
         i=str(i)
@@ -38,113 +38,62 @@ for i in names:
         file_come = f'./data/come/{i}_come_{j}.xls'
         file_go= f'./data/go/{i}_go_{j}.xls'
         file_wave= f'./data/wave/{i}_wave_{j}.xls'
-        circle_data=pd.read_excel(file_circle)[:1500]
-        come_data=pd.read_excel(file_come)[:1500]
-        go_data=pd.read_excel(file_go)[:1500]
-        wave_data=pd.read_excel(file_wave)[:1500]
-        for k in range(0,1500,100):
+        circle_data=(pd.read_excel(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
+        come_data=(pd.read_excel(file_come)).drop(['Time (s)'], axis=1).values[:1400]
+        go_data=(pd.read_excel(file_go)).drop(['Time (s)'], axis=1).values[:1400]
+        wave_data=(pd.read_excel(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
+        for k in range(0,1400,100):
 
             #circle
-            circle=circle_data.iloc[k:k+100].copy()
-
-            circle['label'] = 0
-            dataframes.append(circle)
+            circle=circle_data[k:k+100].copy()
+            dataframes.append([circle,0])
             #come
-            come=come_data.iloc[k:k+100].copy()
-            come['label']=1
-            dataframes.append(come)
+            come=come_data[k:k+100].copy()
+            dataframes.append([come,1])
             #go
-            go=go_data.iloc[k:k+100].copy()
-            go['label']=2
-            dataframes.append(go)
+            go=go_data[k:k+100].copy()
+            dataframes.append([go,2])
             #wave
-            wave=wave_data.iloc[k:k+100].copy()
-            wave['label']=3
-            dataframes.append(wave)
+            wave=wave_data[k:k+100].copy()
+            dataframes.append([wave,3])
+            num+=4
 
 # print(dataframes)
-# # Combine all dataframes into one
-combined_data = pd.concat(dataframes, ignore_index=True)
-
-import pandas as pd
-
-# 假设 'data' 是之前加载的DataFrame
-window_size = 5  # 定义移动平均的窗口大小
-
-# 对每个需要处理的列应用移动平均
-smoothed_data = combined_data.copy()
-smoothed_data['Linear Acceleration x (m/s^2)'] = combined_data['Linear Acceleration x (m/s^2)'].rolling(window=window_size).mean()
-smoothed_data['Linear Acceleration y (m/s^2)'] = combined_data['Linear Acceleration y (m/s^2)'].rolling(window=window_size).mean()
-smoothed_data['Linear Acceleration z (m/s^2)'] = combined_data['Linear Acceleration z (m/s^2)'].rolling(window=window_size).mean()
-
-# 填充NaN值，这些NaN是由于滚动平均而产生的。可以用前向填充或后向填充。
-smoothed_data.fillna(method='bfill', inplace=True)
-
-def butter_lowpass_filter(data, cutoff, fs, order):
-    nyq = 0.5 * fs
-    normal_cutoff = cutoff / nyq
-    b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    y = lfilter(b, a, data)
-    return y
 
 
-# 应用滤波器（示例参数）
-cutoff = 3.667  # 截止频率（需根据数据调整）
-fs = 50.0       # 采样率（需根据数据调整）
-order = 6       # 滤波器阶数
+actions, labels = zip(*dataframes)
 
-# 假设 'data' 是之前加载的DataFrame
-filtered_data = combined_data.copy()
-filtered_data['Linear Acceleration x (m/s^2)'] = butter_lowpass_filter(combined_data['Linear Acceleration x (m/s^2)'], cutoff, fs, order)
-filtered_data['Linear Acceleration y (m/s^2)'] = butter_lowpass_filter(combined_data['Linear Acceleration y (m/s^2)'], cutoff, fs, order)
-filtered_data['Linear Acceleration z (m/s^2)'] = butter_lowpass_filter(combined_data['Linear Acceleration z (m/s^2)'], cutoff, fs, order)
-# #
-# # # Check the combined dataframe
-# print(combined_data.head()),
-# print(combined_data.tail()),
-# print(combined_data['label'].value_counts())
+# 将所有动作数据堆叠起来形成一个二维数组，以便进行标准化
+actions_stacked = np.vstack(actions)
 
-# combined_data = clean()
-#
-# 一维卷积神经网络（1D CNN）来训练模型。在开始之前，我们需要执行以下步骤：
-#
-# 数据预处理：确保所有输入数据都是数值类型，并且没有缺失值。
-# 特征选择：虽然1D CNN可以直接从原始数据中学习，但有时候对数据进行一些变换（如快速傅里叶变换（FFT））或计算一些统计特征可能有助于模型学习。
-# 数据划分：将数据分为训练集和测试集。
-# 模型构建：构建1D CNN模型架构。
-# 模型训练：使用训练集数据来训练模型。
-# 模型评估：使用测试集数据来评估模型性能。
-# 接下来，我将开始这个过程。首先，我们需要将数据划分为训练集和测试集。然后，我会构建一个简单的1D CNN模型并训练它。
-
-y = to_categorical(filtered_data['label'])
-
-# 数据标准化
-X = filtered_data.drop(['Time (s)', 'label'], axis=1).values
-print(X)
+# 初始化标准化器
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+
+# 训练标准化器并标准化数据
+actions_scaled = scaler.fit_transform(actions_stacked)
+
+# 保存标准化器
 joblib.dump(scaler, 'scaler.save')
-print(X_scaled)
 
+# 将标准化的数据重新划分回原来的手势块
+actions_scaled_reshaped = actions_scaled.reshape(num, 100, 4)
 
+# 对标签进行独热编码
+y = to_categorical(labels)
 
 
 # 划分数据为训练集和测试集
 #  1:4 分为训练集和测试集
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
-X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
-X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
-print(X_train.shape)
+X_train, X_test, y_train, y_test = train_test_split(actions_scaled_reshaped, y, test_size=0.2, random_state=42)
+
 print(X_train)
-
-
-# print(X_train)
+print(y_train)
 
 # 构建1D CNN模型
 # Sequential模型是Keras中的一种模型，用于线性堆叠层。这意味着您可以按顺序添加一层又一层，每层只有一个输入和一个输出。
 model = Sequential()
 # 添加一个一维卷积层（Conv1D）。这是1D CNN的核心，用于提取序列数据的特征。
-model.add(Conv1D(filters=128, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
+model.add(Conv1D(filters=128, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 4)))
 # 128，0.7621.64, 0.7547
 # 添加一个Dropout层，用于减少过拟合。Dropout通过在训练过程中随机丢弃（设置为零）网络中的一部分神经元输出，来提高模型的泛化能力。
 # 0.5表示丢弃率为50%，即在训练过程中随机选择50%的神经元输出设置为0
@@ -200,7 +149,7 @@ optimizer = Adam(learning_rate=lr_schedule)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 # 训练模型
-history = model.fit(X_train, y_train, epochs=1000, validation_data=(X_test, y_test),callbacks=early_stopping)
+history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test),callbacks=early_stopping)
 
 # 评估模型
 accuracy = model.evaluate(X_test, y_test, verbose=0)[1]
