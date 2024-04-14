@@ -76,12 +76,12 @@ def cleanData(file_path):
         data.dropna()
 
         #归一化数据（Min-Max Normalization）
-        # data = data.select_dtypes(include=[np.number])
-        # column_names = data.columns
-        # scaler = MinMaxScaler(feature_range=(0, 1))
-        # data = scaler.fit_transform(data)
-        # # 如果需要将结果转换回DataFrame
-        # data = pd.DataFrame(data, columns=column_names)
+        data = data.select_dtypes(include=[np.number])
+        column_names = data.columns
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        data = scaler.fit_transform(data)
+        # 如果需要将结果转换回DataFrame
+        data = pd.DataFrame(data, columns=column_names)
 
 
         # 滚动平均值(去白噪音）这种方法对于减少随机噪声非常有效，但可能不适合保留数据中的所有重要信号（如峰值）。
@@ -102,13 +102,13 @@ def cleanData(file_path):
         # order = 6  # 滤波器阶数
         # for column in data:
         #      if column in data.columns:
-        #          data[column]=butter_lowpass_filter(data,3.5,30,6)
+        #          data[column]=butter_lowpass_filter(data,3,1500,1)
 
         #小波去噪，适合处理可能包含非平稳或多尺度噪声的信号
-        # wavelet = 'db8'
-        # for column in data:
-        #      if column in data.columns:
-        #          data[column]=wavelet_denoise(data, wavelet=wavelet, mode='soft', level=1)
+        wavelet = 'db1'
+        for column in data:
+             if column in data.columns:
+                 data[column]=wavelet_denoise(data, wavelet=wavelet, mode='soft', level=1)
 
 
 
