@@ -5,6 +5,7 @@ from scipy.signal import lfilter, butter
 
 from scipy.stats import skew, kurtosis
 from sklearn.preprocessing import StandardScaler
+from statsmodels.stats.diagnostic import acorr_ljungbox
 
 # Define labels based on gesture recognition
 from tensorflow.python.ops.signal.fft_ops import fft
@@ -112,5 +113,33 @@ def cleanData(file_path):
         print(f"File {file_path} not found.")
     except Exception as e:
         print(f"An error occurred: {e}")
-cleanData('./data/go/c_go_1.xls')
-print(pd.read_excel("./data/go/c_go_1.xls"))
+# cleanData('./data/go/c_go_1.xls')
+
+
+d=pd.read_excel("./data/go/c_go_1.xls")
+print(d)
+
+#################################检测白噪音################################################
+# 定义要测试的列
+columns_to_test = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
+                   'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
+
+# 对每一列进行 Ljung-Box Q 测试
+results = {}
+for column in columns_to_test:
+    # 确保没有 NaN 值，删除它们
+    series = d[column].dropna()
+
+    # 进行 Ljung-Box Q 测试
+    lb_value, p_value = acorr_ljungbox(series, lags=[10], return_df=False)
+
+    # 存储测试结果
+    results[column] = {'Ljung-Box Q Statistic': lb_value, 'P-value': p_value}
+
+# 输出结果
+for col, result in results.items():
+    print(f"{col}:")
+    print(f"  Ljung-Box Q Statistic: {result['Ljung-Box Q Statistic']}")
+    print(f"  P-value: {result['P-value']}")
+    print()
+######################################################################################
