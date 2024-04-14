@@ -130,7 +130,7 @@ def cleanData(file_path):
 d=pd.read_excel("./data/go/c_go_1.xls")
 print(d)
 
-#################################检测白噪音################################################
+#-------------------------检测白噪音---------------------------------------------------#
 # # 定义要测试的列
 # columns_to_test = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
 #                    'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
@@ -153,4 +153,4 @@ print(d)
 #     print(f"  Ljung-Box Q Statistic: {result['Ljung-Box Q Statistic']}")
 #     print(f"  P-value: {result['P-value']}")
 #     print()
-# ######################################################################################
+# -----------------------------------------------------------------------------------#
