@@ -42,7 +42,7 @@ while(i<num):
     # print(f"Predicted class: {predicted_class}")
     print(predicted_class)
     mode_result = stats.mode(predicted_class)
-    print(mode_result.mode[0])
+    # print(mode_result.mode[0])
     print("预测结果："+str(prediction[mode_result.mode[0]]))
     i+=100
 # predictions = model.predict(X_scaled)
