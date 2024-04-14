@@ -59,7 +59,22 @@ def cleanData(file_path):
                              'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
 
 
-        # Replace outliers 替换异常值
+
+
+        # Drop NA values that arise from rolling mean
+        # data = data.dropna()
+        # 滚动平均值(去白噪音）
+        for column in data:
+            if column in data.columns:
+                data[column] = data[column].rolling(window=5, center=True).mean()
+
+        # 傅里叶变换，去白噪音
+        for column in data:
+            if column in data.columns:
+                data[column] = np.abs(fft(data[column]))
+
+        # Replace outliers
+
         for column in guolv_list:
             if column in data.columns:
                 data = replace_outliers(data, column)
@@ -101,6 +116,7 @@ def cleanData(file_path):
 
 
         return data
+
 
 
 
