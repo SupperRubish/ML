@@ -17,7 +17,7 @@ scaler = joblib.load('scaler.save')
 model = load_model('my_model.h5')
 
 # 加载新的预测数据
-X_new = pd.read_excel("./data/pred3_come.xls")
+X_new = pd.read_excel("./data/pred1_wave.xls")
 X_new = X_new.drop(['Time (s)'], axis=1).values
 num=(len(X_new)//100)*100
 X_new = X_new[:num]
