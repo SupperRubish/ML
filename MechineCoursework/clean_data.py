@@ -93,10 +93,10 @@ def cleanData(file_path):
         #          data[column]=butter_lowpass_filter(data,3.5,30,6)
 
         #小波去噪，适合处理可能包含非平稳或多尺度噪声的信号
-        wavelet = 'db8'
-        for column in data:
-             if column in data.columns:
-                 data[column]=wavelet_denoise(data, wavelet=wavelet, mode='soft', level=1)
+        # wavelet = 'db8'
+        # for column in data:
+        #      if column in data.columns:
+        #          data[column]=wavelet_denoise(data, wavelet=wavelet, mode='soft', level=1)
 
 
 
