@@ -68,14 +68,14 @@ def cleanData(file_path):
             if column in data.columns:
                 data = replace_outliers(data, column)
 
-        #标准化数据
+        #标准化数据（Z-score normalization）
         # if all(col in data.columns for col in guolv_list):
         #     data[guolv_list] = scaler.fit_transform(data[guolv_list])
 
         # 去NA值
         data.dropna()
 
-        #归一化数据
+        #归一化数据（Min-Max Normalization）
         # data = data.select_dtypes(include=[np.number])
         # column_names = data.columns
         # scaler = MinMaxScaler(feature_range=(0, 1))
