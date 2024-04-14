@@ -25,12 +25,6 @@ def replace_outliers(df, column):
     return df
 
 
-# # Add function to compute additional statistics
-# def add_statistical_features(data, column):
-#     data[f'{column}_mean'] = data[column].mean()
-#     data[f'{column}_std'] = data[column].std()
-#     data[f'{column}_skew'] = skew(data[column])
-#     data[f'{column}_kurt'] = kurtosis(data[column])
 def cleanData(file_path):
     scaler = StandardScaler()
     try:
@@ -38,34 +32,38 @@ def cleanData(file_path):
         data = pd.read_excel(file_path)
 
         # Apply moving average filter
-        columns_to_filter = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
+
+        guolv_list = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
                              'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
-        for column in columns_to_filter:
-            if column in data.columns:
-                data[column] = data[column].rolling(window=5, center=True).mean()
-            #     add_statistical_features(data, column)
 
-        # Standardize data
-        if all(col in data.columns for col in columns_to_filter):
-            data[columns_to_filter] = scaler.fit_transform(data[columns_to_filter])
 
-        # # Fourier Transform for frequency domain features
-        # if 'Absolute acceleration (m/s^2)' in data.columns:
-        #     data['fft_abs_acceleration'] = abs(fft(data['Absolute acceleration (m/s^2)']))
-        # else:
-        #     print("FFT column 'Absolute acceleration (m/s^2)' not found.")
 
         # Drop NA values that arise from rolling mean
-        data = data.dropna()
+        # data = data.dropna()
 
         # Replace outliers
-        for column in columns_to_filter:
+        for column in guolv_list:
             if column in data.columns:
                 data = replace_outliers(data, column)
         return data
+
+        # 滚动平均值(去白噪音）
+        for column in data:
+            if column in data.columns:
+                data[column] = data[column].rolling(window=5, center=True).mean()
+
+
+        # 傅里叶变换，去白噪音
+        for column in data:
+            if column in data.columns:
+                data[column] = np.abs(fft(data[column]))
+
+
+
 
     except FileNotFoundError:
         print(f"File {file_path} not found.")
     except Exception as e:
         print(f"An error occurred: {e}")
 cleanData('./data/go/c_go_1.xls')
+print(pd.read_excel("./data/go/c_go_1.xls"))
