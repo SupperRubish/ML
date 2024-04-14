@@ -1,10 +1,14 @@
 import numpy as np
 import pandas as pd
-from scipy.fft import fft
+import pywt
+from scipy.signal import lfilter, butter
+
 from scipy.stats import skew, kurtosis
 from sklearn.preprocessing import StandardScaler
 
 # Define labels based on gesture recognition
+from tensorflow.python.ops.signal.fft_ops import fft
+
 labels_dict = {
     'circle': 0,
     'come': 1,
@@ -24,6 +28,24 @@ def replace_outliers(df, column):
     df[column] = np.where((df[column] < lower_bound) | (df[column] > upper_bound), median_value, df[column])
     return df
 
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    y = lfilter(b, a, data)
+    return y
+
+def wavelet_denoise(data, wavelet, mode='soft', level=1):
+    # Decompose to wavelet coefficients
+    coeff = pywt.wavedec(data, wavelet, mode="per")
+    # Calculate threshold
+    sigma = np.std(coeff[-level])
+    uthresh = sigma * np.sqrt(2 * np.log(len(data)))
+    # Apply threshold
+    coeff[1:] = [pywt.threshold(i, value=uthresh, mode=mode) for i in coeff[1:]]
+    # Reconstruct the signal using the thresholded coefficients
+    return pywt.waverec(coeff, wavelet, mode="per")
+
 
 def cleanData(file_path):
     scaler = StandardScaler()
@@ -37,26 +59,48 @@ def cleanData(file_path):
                              'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
 
 
-
-        # Drop NA values that arise from rolling mean
-        # data = data.dropna()
-
-        # Replace outliers
+        # Replace outliers 替换异常值
         for column in guolv_list:
             if column in data.columns:
                 data = replace_outliers(data, column)
+
+        #标准化数据
+        # if all(col in data.columns for col in guolv_list):
+        #     data[guolv_list] = scaler.fit_transform(data[guolv_list])
+
+
+        # 滚动平均值(去白噪音）这种方法对于减少随机噪声非常有效，但可能不适合保留数据中的所有重要信号（如峰值）。
+        # for column in data:
+        #     if column in data.columns:
+        #         data[column] = data[column].rolling(window=5, center=True).mean()
+
+
+
+        # # # 傅里叶变换，时间序列从时域转换到频域，这使得可以识别并去除高频噪声成分。处理完后，可以进行逆变换回时域。
+        # for column in data:
+        #     if column in data.columns:
+        #         data[column] = np.abs(fft(data[column]))
+
+        #低通滤波器，这种方法允许低频信号通过，但削减高频信号的幅度，适合去除因快速且短暂的震动引起的噪声。
+        # cutoff = 3.5  # 截止频率（需根据数据特性调整）
+        # fs = 30  # 采样频率（同样需根据数据特性调整）
+        # order = 6  # 滤波器阶数
+        # for column in data:
+        #      if column in data.columns:
+        #          data[column]=butter_lowpass_filter(data,3.5,30,6)
+
+        #小波去噪，适合处理可能包含非平稳或多尺度噪声的信号
+        wavelet = 'db8'
+        for column in data:
+             if column in data.columns:
+                 data[column]=wavelet_denoise(data, wavelet=wavelet, mode='soft', level=1)
+
+
+
+        data.dropna()
+
+
         return data
-
-        # 滚动平均值(去白噪音）
-        for column in data:
-            if column in data.columns:
-                data[column] = data[column].rolling(window=5, center=True).mean()
-
-
-        # 傅里叶变换，去白噪音
-        for column in data:
-            if column in data.columns:
-                data[column] = np.abs(fft(data[column]))
 
 
 
