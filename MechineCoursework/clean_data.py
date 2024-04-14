@@ -6,6 +6,7 @@ from scipy.signal import lfilter, butter
 from scipy.stats import skew, kurtosis
 from sklearn.preprocessing import StandardScaler
 from statsmodels.stats.diagnostic import acorr_ljungbox
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # Define labels based on gesture recognition
 from tensorflow.python.ops.signal.fft_ops import fft
@@ -71,6 +72,17 @@ def cleanData(file_path):
         # if all(col in data.columns for col in guolv_list):
         #     data[guolv_list] = scaler.fit_transform(data[guolv_list])
 
+        # 去NA值
+        data.dropna()
+
+        #归一化数据
+        # data = data.select_dtypes(include=[np.number])
+        # column_names = data.columns
+        # scaler = MinMaxScaler(feature_range=(0, 1))
+        # data = scaler.fit_transform(data)
+        # # 如果需要将结果转换回DataFrame
+        # data = pd.DataFrame(data, columns=column_names)
+
 
         # 滚动平均值(去白噪音）这种方法对于减少随机噪声非常有效，但可能不适合保留数据中的所有重要信号（如峰值）。
         # for column in data:
@@ -100,7 +112,6 @@ def cleanData(file_path):
 
 
 
-        data.dropna()
 
 
         return data
@@ -120,26 +131,26 @@ d=pd.read_excel("./data/go/c_go_1.xls")
 print(d)
 
 #################################检测白噪音################################################
-# 定义要测试的列
-columns_to_test = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
-                   'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
-
-# 对每一列进行 Ljung-Box Q 测试
-results = {}
-for column in columns_to_test:
-    # 确保没有 NaN 值，删除它们
-    series = d[column].dropna()
-
-    # 进行 Ljung-Box Q 测试
-    lb_value, p_value = acorr_ljungbox(series, lags=[10], return_df=False)
-
-    # 存储测试结果
-    results[column] = {'Ljung-Box Q Statistic': lb_value, 'P-value': p_value}
-
-# 输出结果
-for col, result in results.items():
-    print(f"{col}:")
-    print(f"  Ljung-Box Q Statistic: {result['Ljung-Box Q Statistic']}")
-    print(f"  P-value: {result['P-value']}")
-    print()
-######################################################################################
+# # 定义要测试的列
+# columns_to_test = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
+#                    'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
+#
+# # 对每一列进行 Ljung-Box Q 测试
+# results = {}
+# for column in columns_to_test:
+#     # 确保没有 NaN 值，删除它们
+#     series = d[column].dropna()
+#
+#     # 进行 Ljung-Box Q 测试
+#     lb_value, p_value = acorr_ljungbox(series, lags=[10], return_df=False)
+#
+#     # 存储测试结果
+#     results[column] = {'Ljung-Box Q Statistic': lb_value, 'P-value': p_value}
+#
+# # 输出结果
+# for col, result in results.items():
+#     print(f"{col}:")
+#     print(f"  Ljung-Box Q Statistic: {result['Ljung-Box Q Statistic']}")
+#     print(f"  P-value: {result['P-value']}")
+#     print()
+# ######################################################################################
