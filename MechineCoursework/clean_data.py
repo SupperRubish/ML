@@ -68,6 +68,10 @@ def cleanData(file_path):
             if column in data.columns:
                 data = replace_outliers(data, column)
 
+        #标准化数据（Z-score normalization）
+        # if all(col in data.columns for col in guolv_list):
+        #     data[guolv_list] = scaler.fit_transform(data[guolv_list])
+
         # 去NA值
         data.dropna()
 

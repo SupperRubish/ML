@@ -41,15 +41,15 @@ for i in names:
         file_go= f'./data/go/{i}_go_{j}.xls'
         file_wave= f'./data/wave/{i}_wave_{j}.xls'
 
-        # circle_data=(clean_data.cleanData(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
-        # come_data=(clean_data.cleanData(file_come)).drop(['Time (s)'], axis=1).values[:1400]
-        # go_data=(clean_data.cleanData(file_go)).drop(['Time (s)'], axis=1).values[:1400]
-        # wave_data=(clean_data.cleanData(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
+        circle_data=(clean_data.cleanData(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
+        come_data=(clean_data.cleanData(file_come)).drop(['Time (s)'], axis=1).values[:1400]
+        go_data=(clean_data.cleanData(file_go)).drop(['Time (s)'], axis=1).values[:1400]
+        wave_data=(clean_data.cleanData(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
 
-        circle_data = (pd.read_excel(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
-        come_data = (pd.read_excel(file_come)).drop(['Time (s)'], axis=1).values[:1400]
-        go_data = (pd.read_excel(file_go)).drop(['Time (s)'], axis=1).values[:1400]
-        wave_data = (pd.read_excel(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
+        # circle_data = (pd.read_excel(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
+        # come_data = (pd.read_excel(file_come)).drop(['Time (s)'], axis=1).values[:1400]
+        # go_data = (pd.read_excel(file_go)).drop(['Time (s)'], axis=1).values[:1400]
+        # wave_data = (pd.read_excel(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
         for k in range(0,1400,100):
 
             #circle
