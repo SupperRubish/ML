@@ -1,3 +1,5 @@
+import random
+
 import joblib
 import pandas as pd
 import numpy as np
@@ -31,7 +33,7 @@ dataframes = []
 #cheng的指导
 num=0
 for i in names:
-    for j in range(1,6):
+    for j in range(1,11):
         i=str(i)
         j=str(j)
         file_circle=f'./data/circle/{i}_circle_{j}.xls'
@@ -64,7 +66,7 @@ for i in names:
             dataframes.append([wave,3])
             num+=4
 
-# print(dataframes)
+random.shuffle(dataframes)
 
 
 actions, labels = zip(*dataframes)
