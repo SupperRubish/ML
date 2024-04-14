@@ -40,6 +40,15 @@ def cleanData(file_path):
 
         # Drop NA values that arise from rolling mean
         # data = data.dropna()
+        # 滚动平均值(去白噪音）
+        for column in data:
+            if column in data.columns:
+                data[column] = data[column].rolling(window=5, center=True).mean()
+
+        # 傅里叶变换，去白噪音
+        for column in data:
+            if column in data.columns:
+                data[column] = np.abs(fft(data[column]))
 
         # Replace outliers
         for column in guolv_list:
@@ -47,16 +56,7 @@ def cleanData(file_path):
                 data = replace_outliers(data, column)
         return data
 
-        # 滚动平均值(去白噪音）
-        for column in data:
-            if column in data.columns:
-                data[column] = data[column].rolling(window=5, center=True).mean()
 
-
-        # 傅里叶变换，去白噪音
-        for column in data:
-            if column in data.columns:
-                data[column] = np.abs(fft(data[column]))
 
 
 
