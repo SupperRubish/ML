@@ -31,53 +31,41 @@ def replace_outliers(df, column):
 #     data[f'{column}_std'] = data[column].std()
 #     data[f'{column}_skew'] = skew(data[column])
 #     data[f'{column}_kurt'] = kurtosis(data[column])
+def cleanData(file_path):
+    scaler = StandardScaler()
+    try:
+        # Load data
+        data = pd.read_excel(file_path)
 
-scaler = StandardScaler()
+        # Apply moving average filter
+        columns_to_filter = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
+                             'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
+        for column in columns_to_filter:
+            if column in data.columns:
+                data[column] = data[column].rolling(window=5, center=True).mean()
+            #     add_statistical_features(data, column)
 
-# Process data from multiple files
-for name in names:
-    for j in range(1, 6):
-        for gesture, label in labels_dict.items():
-            file_path = f'./data/{gesture}/{name}_{gesture}_{j}.xls'
-            output_file_path = f'./clean_data/{gesture}/clean_{name}_{gesture}_{j}.xlsx'
-            try:
-                # Load data
-                data = pd.read_excel(file_path)
+        # Standardize data
+        if all(col in data.columns for col in columns_to_filter):
+            data[columns_to_filter] = scaler.fit_transform(data[columns_to_filter])
 
-                # Apply moving average filter
-                columns_to_filter = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
-                                     'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
-                for column in columns_to_filter:
-                    if column in data.columns:
-                        data[column] = data[column].rolling(window=5, center=True).mean()
-                    #     add_statistical_features(data, column)
+        # # Fourier Transform for frequency domain features
+        # if 'Absolute acceleration (m/s^2)' in data.columns:
+        #     data['fft_abs_acceleration'] = abs(fft(data['Absolute acceleration (m/s^2)']))
+        # else:
+        #     print("FFT column 'Absolute acceleration (m/s^2)' not found.")
 
-                # Standardize data
-                if all(col in data.columns for col in columns_to_filter):
-                    data[columns_to_filter] = scaler.fit_transform(data[columns_to_filter])
+        # Drop NA values that arise from rolling mean
+        data = data.dropna()
 
-                # # Fourier Transform for frequency domain features
-                # if 'Absolute acceleration (m/s^2)' in data.columns:
-                #     data['fft_abs_acceleration'] = abs(fft(data['Absolute acceleration (m/s^2)']))
-                # else:
-                #     print("FFT column 'Absolute acceleration (m/s^2)' not found.")
+        # Replace outliers
+        for column in columns_to_filter:
+            if column in data.columns:
+                data = replace_outliers(data, column)
+        return data
 
-                # Drop NA values that arise from rolling mean
-                data = data.dropna()
-
-                # Replace outliers
-                for column in columns_to_filter:
-                    if column in data.columns:
-                        data = replace_outliers(data, column)
-
-                # Assign label
-                # data['Label'] = label
-
-                # Save the processed data to a new file
-                data.to_excel(output_file_path, index=False, engine='openpyxl')
-                print(f"Processed data saved to {output_file_path}")
-
-            except FileNotFoundError:
-                print(f"File {file_path} not found.")
-            except Exception as e:
-                print(f"An error occurred: {e}")
+    except FileNotFoundError:
+        print(f"File {file_path} not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+cleanData('./data/go/c_go_1.xls')

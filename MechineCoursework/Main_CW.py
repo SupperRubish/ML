@@ -12,7 +12,7 @@ from keras.utils import to_categorical
 from sklearn.preprocessing import StandardScaler
 from keras.optimizers import SGD, Adam
 from scipy.signal import butter, lfilter
-from clean_data import clean
+import clean_data
 # We will load each file and assign labels to each gesture class
 # The labels are based on the filenames which seem to indicate the gesture
 
@@ -38,10 +38,16 @@ for i in names:
         file_come = f'./data/come/{i}_come_{j}.xls'
         file_go= f'./data/go/{i}_go_{j}.xls'
         file_wave= f'./data/wave/{i}_wave_{j}.xls'
-        circle_data=(pd.read_excel(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
-        come_data=(pd.read_excel(file_come)).drop(['Time (s)'], axis=1).values[:1400]
-        go_data=(pd.read_excel(file_go)).drop(['Time (s)'], axis=1).values[:1400]
-        wave_data=(pd.read_excel(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
+
+        # circle_data=(clean_data.cleanData(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
+        # come_data=(clean_data.cleanData(file_come)).drop(['Time (s)'], axis=1).values[:1400]
+        # go_data=(clean_data.cleanData(file_go)).drop(['Time (s)'], axis=1).values[:1400]
+        # wave_data=(clean_data.cleanData(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
+
+        circle_data = (pd.read_excel(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
+        come_data = (pd.read_excel(file_come)).drop(['Time (s)'], axis=1).values[:1400]
+        go_data = (pd.read_excel(file_go)).drop(['Time (s)'], axis=1).values[:1400]
+        wave_data = (pd.read_excel(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
         for k in range(0,1400,100):
 
             #circle
@@ -93,7 +99,7 @@ print(y_train)
 # Sequential模型是Keras中的一种模型，用于线性堆叠层。这意味着您可以按顺序添加一层又一层，每层只有一个输入和一个输出。
 model = Sequential()
 # 添加一个一维卷积层（Conv1D）。这是1D CNN的核心，用于提取序列数据的特征。
-model.add(Conv1D(filters=128, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 4)))
+model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 4)))
 # 128，0.7621.64, 0.7547
 # 添加一个Dropout层，用于减少过拟合。Dropout通过在训练过程中随机丢弃（设置为零）网络中的一部分神经元输出，来提高模型的泛化能力。
 # 0.5表示丢弃率为50%，即在训练过程中随机选择50%的神经元输出设置为0
