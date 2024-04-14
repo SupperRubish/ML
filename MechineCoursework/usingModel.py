@@ -43,7 +43,7 @@ while(i<num):
     print(predicted_class)
     mode_result = stats.mode(predicted_class)
     # print(mode_result.mode[0])
-    print("预测结果："+str(prediction[mode_result.mode[0]]))
+    print("预测结果："+str(prediction[predicted_class[0]]))
     i+=100
 # predictions = model.predict(X_scaled)
 # predicted_class = np.argmax(predictions, axis=1)
