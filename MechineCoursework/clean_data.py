@@ -69,19 +69,19 @@ def cleanData(file_path):
                 data = replace_outliers(data, column)
 
         #标准化数据（Z-score normalization）
-        # if all(col in data.columns for col in guolv_list):
-        #     data[guolv_list] = scaler.fit_transform(data[guolv_list])
+        if all(col in data.columns for col in guolv_list):
+            data[guolv_list] = scaler.fit_transform(data[guolv_list])
 
         # 去NA值
         data.dropna()
 
         #归一化数据（Min-Max Normalization）
-        data = data.select_dtypes(include=[np.number])
-        column_names = data.columns
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        data = scaler.fit_transform(data)
-        # 如果需要将结果转换回DataFrame
-        data = pd.DataFrame(data, columns=column_names)
+        # data = data.select_dtypes(include=[np.number])
+        # column_names = data.columns
+        # scaler = MinMaxScaler(feature_range=(0, 1))
+        # data = scaler.fit_transform(data)
+        # # 如果需要将结果转换回DataFrame
+        # data = pd.DataFrame(data, columns=column_names)
 
 
         # 滚动平均值(去白噪音）这种方法对于减少随机噪声非常有效，但可能不适合保留数据中的所有重要信号（如峰值）。
