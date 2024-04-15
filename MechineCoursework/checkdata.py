@@ -108,6 +108,24 @@ def prepare_dataframes(dataframe_lists, column_names, start_time, sample_interva
         prepared_dataframes.append(combined_df)
     return prepared_dataframes
 
+#---------------------统计性描述数据--------------------------------------------
+
+# 合并数据帧并添加描述性统计的函数
+def generate_descriptive_stats(dataframe_lists, column_names):
+    for df_list in dataframe_lists:
+        if df_list:  # 确保列表不为空
+            combined_df = combine_dataframes(df_list)  # 合并数据帧列表
+            combined_df.columns = column_names  # 设置列名
+            print(combined_df.describe())  # 打印描述性统计
+
+# 调用函数生成描述性统计
+generate_descriptive_stats([circle_dataframes, go_dataframes, come_dataframes, wave_dataframes,
+                            original_circle_dataframes, original_go_dataframes,
+                            original_come_dataframes, original_wave_dataframes],
+                            ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)',
+                             'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)'])
+
+
 #--------------------箱形图-------------------------------------------------
 def plot_boxplots(dataframe_lists, column_names, gesture_names):
     for df_list, gesture_name in zip(dataframe_lists, gesture_names):
