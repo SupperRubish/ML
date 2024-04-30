@@ -1,6 +1,8 @@
 import numpy as np
+import pandas
 import pandas as pd
 import pywt
+
 from scipy.signal import lfilter, butter
 
 from scipy.stats import skew, kurtosis
@@ -54,6 +56,7 @@ def cleanData(file_path):
     try:
         # Load data
         data = pd.read_excel(file_path)
+        # print(data)
 
         # Apply moving average filter
 
@@ -106,15 +109,20 @@ def cleanData(file_path):
 
         #小波去噪，适合处理可能包含非平稳或多尺度噪声的信号
         wavelet = 'db1'
-        for column in data:
-             if column in data.columns:
-                 data[column]=wavelet_denoise(data, wavelet=wavelet, mode='soft', level=1)
+        newdata = {}
+
+        for column in data.columns:  # 直接遍历列名
+
+            column_data = data[column]
+            if column_data.dtype == np.number:  # 确保列数据是数值型，因为小波变换需要数值数据
+                newdata[column] = wavelet_denoise(column_data, wavelet=wavelet, mode='soft', level=1)
+
+        # 将结果转换回 DataFrame
+        newdata_df = pd.DataFrame(newdata)
 
 
 
-
-
-        return data
+        return newdata_df
 
 
 
@@ -125,8 +133,4 @@ def cleanData(file_path):
     except Exception as e:
         print(f"An error occurred: {e}")
 # cleanData('./data/go/c_go_1.xls')
-
-
-d=pd.read_excel("./data/go/c_go_1.xls")
-print(d)
 
