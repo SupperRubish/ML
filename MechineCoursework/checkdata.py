@@ -116,7 +116,9 @@ def generate_descriptive_stats(dataframe_lists, column_names):
         if df_list:  # 确保列表不为空
             combined_df = combine_dataframes(df_list)  # 合并数据帧列表
             combined_df.columns = column_names  # 设置列名
+            pd.set_option('display.max_columns', None)  # 设置Pandas以显示所有列
             print(combined_df.describe())  # 打印描述性统计
+
 
 # 调用函数生成描述性统计
 generate_descriptive_stats([circle_dataframes, go_dataframes, come_dataframes, wave_dataframes,
