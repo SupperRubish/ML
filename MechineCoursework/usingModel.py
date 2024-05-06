@@ -12,25 +12,25 @@ prediction={
     3: "wave"
 }
 
-# 加载之前保存的scaler和模型
+# Load the previously saved scaler and model
 scaler = joblib.load('scaler.save')
 model = load_model('my_model.h5')
 
-# 加载新的预测数据
+# Load new forecast data
 X_new = pd.read_excel("./data/pred1_wave.xls")
 X_new = X_new.drop(['Time (s)'], axis=1).values
 num=(len(X_new)//100)*100
 X_new = X_new[:num]
 
-# # 使用相同的scaler进行标准化
+# # Standardise using the same scaler
 # X_scaled = scaler.transform(X_new)
 #
-# # 确保数据形状与模型期待的输入匹配
-# X_scaled = np.expand_dims(X_scaled, axis=0)  # 增加样本维度
-# X_scaled = X_scaled.reshape(-1, 100, 4)  # 确保形状匹配
+# # Ensure that the data shape matches the inputs expected by the model
+# X_scaled = np.expand_dims(X_scaled, axis=0)  # Increase sample dimensions
+# X_scaled = X_scaled.reshape(-1, 100, 4)  # Ensure shape matching
 
 
-# 使用模型进行预测
+# Predict using models
 i=0
 while(i<num):
     x = X_new[i:i+100]

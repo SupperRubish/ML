@@ -17,44 +17,45 @@ from sklearn.preprocessing import StandardScaler
 from keras.optimizers import SGD, Adam
 from scipy.signal import butter, lfilter
 import clean_data
-# We will load each file and assign labels to each gesture class
-# The labels are based on the filenames which seem to indicate the gesture
 
-# Assign labels based on the file names (these should be verified with the user)
+# We will load each file and assign labels to each gesture class
+# The labels are based on the filenames which indicate the gesture
+
+# Assign labels based on the file names
 labels_dict = {
         'circle': 0,  # Assuming 'circle.xls' corresponds to the 'circle' gesture
         'come': 1,  # Assuming 'come.xls' corresponds to the 'come here' gesture
         'go': 2,  # Assuming 'go.xls' corresponds to the 'go away' gesture
         'wave': 3  # Assuming 'wave.xls' corresponds to the 'wave' gesture
     }
-names=["c","p","l"]
+names = ["c", "p", "l"]  # Names of group members
 
 # Load each dataset and create a combined dataframe with labels
-
 dataframes = []
-#cheng的指导
 num=0
-currentPath = os.getcwd()
+currentPath = os.getcwd()  # Assigns the path of the current working directory to the variable 'currentPath'
 print(currentPath)
 for i in names:
     for j in range(1,11):
         i=str(i)
         j=str(j)
-        file_circle=currentPath+f"/data/circle/{i}_circle_{j}.xls"
-        file_come = currentPath+f'/data/come/{i}_come_{j}.xls'
-        file_go= currentPath+f'/data/go/{i}_go_{j}.xls'
-        file_wave= currentPath+f'/data/wave/{i}_wave_{j}.xls'
+        file_circle=currentPath+f"/data/circle/{i}_circle_{j}.xls"  # Load each 'circle' dataset
+        file_come = currentPath+f'/data/come/{i}_come_{j}.xls'  # Load each 'come' dataset
+        file_go= currentPath+f'/data/go/{i}_go_{j}.xls'  # Load each 'go' dataset
+        file_wave= currentPath+f'/data/wave/{i}_wave_{j}.xls'  # Load each 'wave' dataset
 
-        circle_data=(clean_data.cleanData(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
-        come_data=(clean_data.cleanData(file_come)).drop(['Time (s)'], axis=1).values[:1400]
-        go_data=(clean_data.cleanData(file_go)).drop(['Time (s)'], axis=1).values[:1400]
-        wave_data=(clean_data.cleanData(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
+        # Drop the 'Time(s)' column and read the first 1400 rows of data
+        circle_data = (clean_data.cleanData(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
+        come_data = (clean_data.cleanData(file_come)).drop(['Time (s)'], axis=1).values[:1400]
+        go_data = (clean_data.cleanData(file_go)).drop(['Time (s)'], axis=1).values[:1400]
+        wave_data = (clean_data.cleanData(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
 
         # circle_data = (pd.read_excel(file_circle)).drop(['Time (s)'], axis=1).values[:1400]
         # come_data = (pd.read_excel(file_come)).drop(['Time (s)'], axis=1).values[:1400]
         # go_data = (pd.read_excel(file_go)).drop(['Time (s)'], axis=1).values[:1400]
         # wave_data = (pd.read_excel(file_wave)).drop(['Time (s)'], axis=1).values[:1400]
-        for k in range(0,1400,100):
+
+        for k in range(0,1400,100):  # Label each 100 rows as a gesture
 
             #circle
             circle=circle_data[k:k+100].copy()
@@ -70,60 +71,71 @@ for i in names:
             dataframes.append([wave,3])
             num+=4
 
+# Shuffle the dataset randomly
 random.shuffle(dataframes)
 
-
+# Unpack the tuples in the 'dataframes' list and recombines the elements into two tuples
 actions, labels = zip(*dataframes)
 
-# 将所有动作数据堆叠起来形成一个二维数组，以便进行标准化
+# Stack all gesture data into a two-dimensional array for normalization
 actions_stacked = np.vstack(actions)
 
-# 初始化标准化器
+# Initialize the normalizer
 scaler = StandardScaler()
 
-# 训练标准化器并标准化数据
+# Train the normalizer and normalize the data
 actions_scaled = scaler.fit_transform(actions_stacked)
 
-# 保存标准化器
+# Save normalizer
 joblib.dump(scaler, 'scaler.save')
 
-# 将标准化的数据重新划分回原来的手势块
+# Reshape the normalized data back into original gesture
+# 100 represents every 100 rows as a gesture and 4 represents 4 features
 actions_scaled_reshaped = actions_scaled.reshape(num, 100, 4)
 
-# 对标签进行独热编码
+# Transform integer labels into a binary(one-hot) format
 y = to_categorical(labels)
 
 
-# 划分数据为训练集和测试集
-#  1:4 分为训练集和测试集
+# Divide the data into training set and test set
+# Ratio of training set and test set is 4:1
 X_train, X_test, y_train, y_test = train_test_split(actions_scaled_reshaped, y, test_size=0.2, random_state=42)
 
 print(X_train)
 print(y_train)
 
-# 构建1D CNN模型
-# Sequential模型是Keras中的一种模型，用于线性堆叠层。这意味着您可以按顺序添加一层又一层，每层只有一个输入和一个输出。
+# Build 1D CNN model
+
+# Sequential model is one of Keras models for linear stacking layers which means you can add layer after layer in order,
+# And each layer has only one input and one output
 model = Sequential()
-# 添加一个一维卷积层（Conv1D）。这是1D CNN的核心，用于提取序列数据的特征。
+
+# Add a one-dimensional convolutional layer(Conv1D). This is the core of 1D CNN, which can extract features of data.
 model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 4)))
-# 128，0.7621.64, 0.7547
-# 添加一个Dropout层，用于减少过拟合。Dropout通过在训练过程中随机丢弃（设置为零）网络中的一部分神经元输出，来提高模型的泛化能力。
-# 0.5表示丢弃率为50%，即在训练过程中随机选择50%的神经元输出设置为0
+
+# Add a dropout layer to reduce over-fitting. Dropout improves the generalisation of the model by randomly discarding
+# a portion of the neuron output from the networking during training
+# 0.5 indicates discard rate of 50%, means 50% of the neuron outputs are randomly selected during training and set to 0
 model.add(Dropout(0.5))
-# 添加一个一维最大池化层（MaxPooling1D）。池化层用于降低数据的维度，减少计算量，同时保持重要信息。即每2个值中选择最大的那个作为输出。
+
+# Add a one-dimensional maximum pooling layer(MaxPooling1D). This is used to reduce the dimensionality of the data
+# and reduce the amount of computation while maintaining important information.
+# That is the largest of every 2 values is chosen as the output
 model.add(MaxPooling1D(pool_size=2))
-# 添加一个Flatten层，将之前层的输出展平。这是从卷积层或池化层到全连接层（Dense层）过渡时常用的技术。
+
+# Add a Flatten layer to spread the output of the previous layer. This is a common technique used when transitioning
+# from a convolutional or pooling layer to a fully connected layer(Dense layer)
 # model.add(Flatten())
 model.add(LSTM(100))
 model.add(Dense(100, activation='relu'))
 model.add(Dense(y.shape[1], activation='softmax'))
 
-# 编译模型
-# 优化器和学习率
+# Compilation model
+# Optimiser and learning rate
 # SGD
 # from tensorflow.keras.optimizers import SGD
 #
-# # 使用SGD优化器，指定学习率
+# #Use SGD optimiser and specify learning rate
 # optimizer = SGD(learning_rate=0.01)
 #
 # model.compile(loss='categorical_crossentropy',
@@ -133,26 +145,26 @@ model.add(Dense(y.shape[1], activation='softmax'))
 # RMSprop
 # from tensorflow.keras.optimizers import RMSprop
 #
-# # 使用RMSprop优化器，指定学习率
+# # Use the RMSprop optimizer and specify the learning rate
 # optimizer = RMSprop(learning_rate=0.001)
 #
 # model.compile(loss='categorical_crossentropy',
 #               optimizer=optimizer,
 #               metrics=['accuracy'])
 
-# 学习率衰减
+# Learning rate decay
 # from tensorflow.keras.optimizers import Adam
 
-# 初始化一个学习率衰减函数
+# Initialise a learning rate decay function
 lr_schedule = ExponentialDecay(
     initial_learning_rate=1e-2,
     decay_steps=10000,
     decay_rate=0.9)
 
-# # 使用带有学习率调度器的Adam优化器
+# Use the Adam optimiser with a learning rate scheduler
 optimizer = Adam(learning_rate=lr_schedule)
 
-# 学习率越小，离最优解越近，效率越慢
+# The smaller the learning rate, the closer to the optimal solution, the slower the efficiency
 # optimizer = SGD(learning_rate=0.01)
 
 # model.compile(loss='categorical_crossentropy',
@@ -160,11 +172,11 @@ optimizer = Adam(learning_rate=lr_schedule)
 #               metrics=['accuracy'])
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-# 训练模型
+# Train the model
 history = model.fit(X_train, y_train, epochs=100, validation_data=(X_test, y_test),callbacks=early_stopping)
 
-# 评估模型
+# Evaluate the model by showing the accuracy
 accuracy = model.evaluate(X_test, y_test, verbose=0)[1]
 print(f'Test accuracy: {accuracy}')
 
-model.save('my_model.h5')  # HDF5文件，需要安装h5py
+model.save('my_model.h5')

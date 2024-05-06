@@ -17,7 +17,6 @@ labels_dict = {
 names=["c","p","l"]
 
 # Load each dataset and create a combined dataframe with labels
-
 circle_dataframes = []
 go_dataframes = []
 come_dataframes = []
@@ -28,7 +27,6 @@ original_go_dataframes = []
 original_come_dataframes = []
 original_wave_dataframes = []
 
-#cheng的指导
 num=0
 for i in names:
     for j in range(1,11):
@@ -38,17 +36,17 @@ for i in names:
         file_come = f'./data/come/{i}_come_{j}.xls'
         file_go= f'./data/go/{i}_go_{j}.xls'
         file_wave= f'./data/wave/{i}_wave_{j}.xls'
-        #读取clean后的数据
+        # Read the data after cleaning
         circle_data = clean_data.cleanData(file_circle)
         come_data = clean_data.cleanData(file_come)
         go_data = clean_data.cleanData(file_go)
         wave_data = clean_data.cleanData(file_wave)
-        #读取原始数据
+        # Read the original data
         orignal_circle_data=pd.read_excel(file_circle)
         orignal_come_data = pd.read_excel(file_come)
         orignal_go_data = pd.read_excel(file_go)
         orignal_wave_data = pd.read_excel(file_wave)
-        #提取数据
+        # Extract the data
         circle_data = circle_data.drop(['Time (s)'], axis=1)[:1400]
         orignal_circle_data = orignal_circle_data.drop(['Time (s)'], axis=1)[:1400]
         come_data = come_data.drop(['Time (s)'], axis=1)[:1400]
@@ -57,7 +55,7 @@ for i in names:
         orignal_go_data = orignal_go_data.drop(['Time (s)'], axis=1)[:1400]
         wave_data = wave_data.drop(['Time (s)'], axis=1)[:1400]
         orignal_wave_data = orignal_wave_data.drop(['Time (s)'], axis=1)[:1400]
-        for k in range(0, 1400, 100):
+        for k in range(0, 1400, 100): # Label each 100 rows as a gesture
             circle = pd.DataFrame(circle_data.values[k:k + 100])
             o_circle=pd.DataFrame(orignal_circle_data.values[k:k + 100])
             circle_dataframes.append(circle)
@@ -84,43 +82,51 @@ dataframe=[circle_dataframes,go_dataframes,come_dataframes,wave_dataframes,origi
 
 
 def combine_dataframes(dataframes_list):
-    # 将列表中的所有 DataFrame 合并为一个
+    # Merge all the DataFrame in the list into one
     combined_df = pd.concat(dataframes_list, ignore_index=True)
     combined_df.columns = column_names
     return combined_df
 
 
 def add_time_column(df, start_time, sample_interval):
-    # df是数据帧，start_time是起始时间，sample_interval是样本间隔（以秒为单位）
+    # df is the data frame, start_time is the start time, sample_interval is the sample interval (in seconds)
     num_samples = df.shape[0]
     time_values = pd.date_range(start=start_time, periods=num_samples, freq=pd.DateOffset(seconds=sample_interval))
     df['Time'] = time_values
     return df
 
+# Create a figure and a grid of subplots which has four rows and one column
 fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(14, 20), sharex=True)
-# 合并、添加列名、时间列的统一处理
+
 def prepare_dataframes(dataframe_lists, column_names, start_time, sample_interval):
+    # Initialise a list to store the prepared dataframes after processing
     prepared_dataframes = []
+
+    # Iterate over each list of dataframes provided in dataframe_lists
     for df_list in dataframe_lists:
+        # Combine all dataframes in the current list into a single dataframe
         combined_df = combine_dataframes(df_list)
+        # Set the column names of the combined dataframe
         combined_df.columns = column_names
+        # Add a time column to the dataframe based on the start time and the sample interval
         combined_df = add_time_column(combined_df, start_time, sample_interval)
+        # Append the processed dataframe to the list of prepared dataframes
         prepared_dataframes.append(combined_df)
     return prepared_dataframes
 
-#---------------------统计性描述数据--------------------------------------------
+#---------------------Statistical descriptive data--------------------------------------------
 
 # 合并数据帧并添加描述性统计的函数
 def generate_descriptive_stats(dataframe_lists, column_names):
     for df_list in dataframe_lists:
-        if df_list:  # 确保列表不为空
-            combined_df = combine_dataframes(df_list)  # 合并数据帧列表
-            combined_df.columns = column_names  # 设置列名
-            pd.set_option('display.max_columns', None)  # 设置Pandas以显示所有列
-            print(combined_df.describe())  # 打印描述性统计
+        if df_list:  # Make sure the list is not none
+            combined_df = combine_dataframes(df_list)  # Merge data frame list
+            combined_df.columns = column_names  # Set the name of column
+            pd.set_option('display.max_columns', None)  # Set Pandas to show all columns
+            print(combined_df.describe())  # print the description of every column
 
 
-# 调用函数生成描述性统计
+# Use functions to generate descriptive statistics
 generate_descriptive_stats([circle_dataframes, go_dataframes, come_dataframes, wave_dataframes,
                             original_circle_dataframes, original_go_dataframes,
                             original_come_dataframes, original_wave_dataframes],
@@ -128,14 +134,14 @@ generate_descriptive_stats([circle_dataframes, go_dataframes, come_dataframes, w
                              'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)'])
 
 
-#--------------------箱形图-------------------------------------------------
+#--------------------Boxplots-------------------------------------------------
 def plot_boxplots(dataframe_lists, column_names, gesture_names):
     for df_list, gesture_name in zip(dataframe_lists, gesture_names):
-        # 合并 DataFrame 列表
+        # Combine DataFrame lists
         combined_df = combine_dataframes(df_list)
-        # 设置列名
+        # Set the names of columns
         combined_df.columns = column_names
-        # 绘制箱形图
+        # Draw boxplot
         plt.figure(figsize=(10, 6))
         combined_df.boxplot()
         plt.title(f"{gesture_name} Gesture Boxplot")
@@ -143,22 +149,22 @@ def plot_boxplots(dataframe_lists, column_names, gesture_names):
         plt.xticks(rotation=45)
         plt.show()
 
-# 定义列名和手势名称
+# Define column names and gesture names
 column_names = ['Linear Acceleration x (m/s^2)', 'Linear Acceleration y (m/s^2)', 'Linear Acceleration z (m/s^2)', 'Absolute acceleration (m/s^2)']
 gesture_names = ['Circle', 'Come', 'Go', 'Wave']
 
-# 调用函数绘制箱形图
+# Draw the boxplots
 plot_boxplots([circle_dataframes, come_dataframes, go_dataframes, wave_dataframes], column_names, gesture_names)
 
 
-# #-----------------------------时间序列图----------------------------------------
+# #-----------------------------Time series plots----------------------------------------
 # 绘图函数
 def plot_each_timeseries(dataframes, labels, time_column='Time'):
-    num_columns = len(dataframes[0].columns) - 1  # 减去时间列
-    column_names = dataframes[0].columns[:-1]  # 不包括时间列的列名
+    num_columns = len(dataframes[0].columns) - 1  # Drop the [Time(s)] column
+    column_names = dataframes[0].columns[:-1]  # Exclude time columns
     num_dataframes = len(dataframes)
 
-    # 对每个DataFrame的每一列进行绘图
+    # Plot each column of each DataFrame
     for i in range(num_columns):
         column_name = column_names[i]
         fig, axes = plt.subplots(nrows=num_dataframes, ncols=1, figsize=(10, 15), sharex=True)
@@ -171,20 +177,20 @@ def plot_each_timeseries(dataframes, labels, time_column='Time'):
         plt.tight_layout()
         plt.show()
 
-# 列名和时间设置
+# Set column names and time
 start_time = pd.Timestamp('00:00:00')
 sample_interval = 0.01
 
-# 数据列表
+# Lists of data
 dataframe_lists = [circle_dataframes, go_dataframes, come_dataframes, wave_dataframes,
                    original_circle_dataframes, original_go_dataframes,
                    original_come_dataframes, original_wave_dataframes]
 
-# 准备数据
+# Prepare for the dataframes
 prepared_dataframes = prepare_dataframes(dataframe_lists, column_names, start_time, sample_interval)
 
-# 绘图标签
+# Draw the labels
 labels = ['Circle', 'Go', 'Come', 'Wave', 'Original Circle', 'Original Go', 'Original Come', 'Original Wave']
 
-# 绘图
+# Draw plots
 plot_each_timeseries(prepared_dataframes, labels)
