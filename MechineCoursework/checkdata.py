@@ -116,7 +116,7 @@ def prepare_dataframes(dataframe_lists, column_names, start_time, sample_interva
 
 #---------------------Statistical descriptive data--------------------------------------------
 
-# 合并数据帧并添加描述性统计的函数
+# Functions to merge data frames and add descriptive statistics
 def generate_descriptive_stats(dataframe_lists, column_names):
     for df_list in dataframe_lists:
         if df_list:  # Make sure the list is not none
