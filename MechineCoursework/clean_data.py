@@ -13,35 +13,29 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 # Define labels based on gesture recognition
 from tensorflow.python.ops.signal.fft_ops import fft
 
-# Label every gesture as a number
 labels_dict = {
     'circle': 0,
     'come': 1,
     'go': 2,
     'wave': 3
 }
-names = ["c", "p", "l"]  # Names of group members
+names = ["c", "p", "l"]
 
 # Replace outliers using the IQR method
 def replace_outliers(df, column):
-    Q1 = df[column].quantile(0.25)  # Q1 is the first quartile
-    Q3 = df[column].quantile(0.75)  # Q3 is the third quartile
-    IQR = Q3 - Q1  # IQR is the difference between the third quartile and the first quartile
-    lower_bound = Q1 - 1.5 * IQR  # Define the lower bound
-    upper_bound = Q3 + 1.5 * IQR  # Define the upper bound
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
     median_value = df[column].median()
-    # Replace values that are outside a specified range with median value
     df[column] = np.where((df[column] < lower_bound) | (df[column] > upper_bound), median_value, df[column])
     return df
 
 def butter_lowpass_filter(data, cutoff, fs, order=5):
-    # Calculate the Nyquist frequency, which is half the sampling rate
     nyq = 0.5 * fs
-    # Normalize the cutoff frequency as a fraction of the Nyquist frequency
     normal_cutoff = cutoff / nyq
-    # Generate the filter coefficients using the Butterworth filter design
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
-    # Apply the filter to the data using the filter coefficients
     y = lfilter(b, a, data)
     return y
 
@@ -71,70 +65,65 @@ def cleanData(file_path):
 
 
 
-        # Replace outliers
+        # Replace outliers 异常值替换
 
         for column in guolv_list:
             if column in data.columns:
                 data = replace_outliers(data, column)
 
-        # Z-score normalization
-        if all(col in data.columns for col in guolv_list):
-            data[guolv_list] = scaler.fit_transform(data[guolv_list])
+        #标准化数据（Z-score normalization）
+        # if all(col in data.columns for col in guolv_list):
+        #     data[guolv_list] = scaler.fit_transform(data[guolv_list])
 
-        # Drop the NA value
+        # 去NA值
         data.dropna()
 
-        # Normalized data（Min-Max Normalization）
-        # data = data.select_dtypes(include=[np.number])
-        # column_names = data.columns
-        # scaler = MinMaxScaler(feature_range=(0, 1))
-        # data = scaler.fit_transform(data)
-        # # If need, convert the results back to a DataFrame
-        # data = pd.DataFrame(data, columns=column_names)
+        #归一化数据（Min-Max Normalization）
+        data = data.select_dtypes(include=[np.number])
+        column_names = data.columns
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        data = scaler.fit_transform(data)
+        # 如果需要将结果转换回DataFrame
+        data = pd.DataFrame(data, columns=column_names)
 
 
-        # # Rolling Average (White Noise Removal) This method is very effective in reducing random noise,
-        # # but may not be suitable for retaining all significant signals (e.g. peaks) in the data.
+        # 滚动平均值(去白噪音）这种方法对于减少随机噪声非常有效，但可能不适合保留数据中的所有重要信号（如峰值）。
         # for column in data:
         #     if column in data.columns:
         #         data[column] = data[column].rolling(window=5, center=True).mean()
 
 
 
-        # # # Fourier Transform, the time series is converted from the time domain to the frequency domain,
-        # # # which allows high frequency noise components to be identified and removed.
+        # # # 傅里叶变换，时间序列从时域转换到频域，这使得可以识别并去除高频噪声成分。处理完后，可以进行逆变换回时域。
         # for column in data:
         #     if column in data.columns:
         #         data[column] = np.abs(fft(data[column]))
 
-        # Low-pass filters, which allow low-frequency signals to pass through but cut the amplitude of
-        # high-frequency signals, are suitable for removing noise caused by fast and brief vibrations.
-        # cutoff = 3.5  # cutoff frequency
-        # fs = 30  # sampling frequency
-        # order = 6  # filter order
+        #低通滤波器，这种方法允许低频信号通过，但削减高频信号的幅度，适合去除因快速且短暂的震动引起的噪声。
+        # cutoff = 3.5  # 截止频率（需根据数据特性调整）
+        # fs = 30  # 采样频率（同样需根据数据特性调整）
+        # order = 6  # 滤波器阶数
         # for column in data:
         #      if column in data.columns:
         #          data[column]=butter_lowpass_filter(data,3,1500,1)
 
-        # Wavelet denoising, which is suitable for processing signals that
-        # may contain non-smooth or multi-scale noise
+        #小波去噪，适合处理可能包含非平稳或多尺度噪声的信号
         wavelet = 'db1'
-
-        # Need a dictionary to store the denoised data
         newdata = {}
 
-        for column in data.columns:  # Traverse column names directly
+        for column in data.columns:  # 直接遍历列名
 
             column_data = data[column]
-            # Make sure that the column data is numeric, as transform needs numeric data
-            if column_data.dtype == np.number:
+            if column_data.dtype == np.number:  # 确保列数据是数值型，因为小波变换需要数值数据
                 newdata[column] = wavelet_denoise(column_data, wavelet=wavelet, mode='soft', level=1)
 
-        # Convert the result back to DataFrame
+        # 将结果转换回 DataFrame
         newdata_df = pd.DataFrame(newdata)
 
 
+
         return newdata_df
+
 
 
 

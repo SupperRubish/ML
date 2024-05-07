@@ -6,7 +6,8 @@ import pandas as pd
 import numpy as np
 from keras.callbacks import EarlyStopping
 from keras.layers import LSTM
-from keras.src.optimizers.schedules import ExponentialDecay
+from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
+
 # from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
 
 from sklearn.model_selection import train_test_split
